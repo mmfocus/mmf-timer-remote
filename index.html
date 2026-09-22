@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<title>MMF TIMER REMOTE</title>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js" defer></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+body{touch-action:pan-x pan-y pinch-zoom}
+.app{width:100vw;height:100vh;min-height:0;padding:18px 24px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;min-height:58px}
+.brand{line-height:1;display:flex;align-items:center;gap:14px}
+.brandLogo{width:64px;height:64px;object-fit:contain;flex:none}
+.brandCopy{display:flex;flex-direction:column}
+.brand .mmf{font-size:27px;font-weight:900;letter-spacing:1px}
+.brand .timer{font-size:20px;font-weight:900;letter-spacing:3px;margin-top:2px}
+.brand .company{font-size:11px;font-weight:700;letter-spacing:2px;margin-top:6px}
+.adjust{display:flex;gap:10px}
+button{font:inherit;color:#fff;background:#080808;border:1px solid #555;border-radius:9px;cursor:pointer}
+button:active{transform:scale(.98)}
+.adjust button{min-width:76px;height:46px;font-size:17px;font-weight:800}
+.display{flex:1;min-height:245px;border:1px solid #252525;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+#displayText{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 18px;font-weight:900;line-height:.88;letter-spacing:1px;font-size:100px;white-space:nowrap;min-width:0;min-height:0;overflow:hidden}
+.controls{display:flex;justify-content:center;gap:16px}
+.mainBtn{width:210px;height:62px;font-size:23px;font-weight:900}
+.start{background:#19a84a;border-color:#19a84a}
+.reset{background:#d92727;border-color:#d92727}
+.presets{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}
+.preset{height:48px;font-size:15px;font-weight:800}
+.panel{border:1px solid #333;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.panelTitle{font-size:17px;font-weight:900;width:100%}
+label{font-size:13px;font-weight:700}
+input[type=number]{width:105px;height:38px;background:#080808;color:#fff;border:1px solid #555;border-radius:7px;padding:7px;font-size:16px}
+input[type=color]{width:55px;height:38px;background:#080808;border:1px solid #555;border-radius:7px;padding:2px}
+.apply{height:40px;padding:0 16px;font-weight:800}
+.messageRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.messageRow input[type=text]{width:min(420px,45vw);height:40px;background:#080808;color:#fff;border:1px solid #555;border-radius:7px;padding:7px 10px;font-size:16px}
+.msgBtn{height:40px;padding:0 18px;font-weight:800}
+@media(max-width:900px){
+ .app{padding:12px 14px;gap:9px}
+ .adjust{gap:5px}.adjust button{min-width:62px;height:40px;font-size:14px}
+ .brandLogo{width:44px;height:44px}.brand .mmf{font-size:22px}.brand .timer{font-size:16px}.brand .company{font-size:9px}
+ .display{min-height:230px}.presets{grid-template-columns:repeat(5,1fr)}
+ .preset{height:42px;font-size:13px}.mainBtn{height:54px;width:170px}
+ .panel{padding:9px}.messageRow input[type=text]{width:calc(100vw - 210px)}
+}
+
+.remoteBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#121820;border:1px solid #34516c;border-radius:10px;padding:7px 10px;font-size:13px}
+.remoteBar button{padding:7px 13px;font-weight:800}.remoteBar button.active{background:#126c92;border-color:#44b5d4}
+.remoteBar input{background:#05090e;color:white;border:1px solid #678;border-radius:6px;font-size:18px;font-weight:800;width:120px;text-transform:uppercase;padding:5px 8px;letter-spacing:2px}
+#roomCode{font-size:20px;font-weight:900;letter-spacing:3px;color:#7be5ff}
+#connectionStatus{color:#a9c8d8;font-weight:700}
+.displayMode .top,.displayMode .controls,.displayMode .presets,.displayMode .panel{display:none!important}
+.displayMode .app{padding:8px;gap:7px}
+.displayMode .remoteBar{padding:4px 9px}
+.displayMode .display{min-height:0;border-color:#17242e}
+.displayMode #displayText{padding:10px}
+@media(max-height:700px){.app{padding:7px 12px;gap:6px}.top{min-height:40px}.brandLogo{width:42px;height:42px}.display{min-height:120px}.panel{padding:7px}.panelTitle{font-size:14px}.mainBtn{height:42px}.preset{height:35px}.remoteBar{padding:4px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <img class="brandLogo" src="mf-logo.png" alt="Multimedia Focus logo">
+      <div class="brandCopy"><div class="mmf">MMF TIMER</div>
+      
+      <div class="company">MULTIMEDIA FOCUS LLC</div></div>
+    </div>
+    <div class="adjust">
+      <button onclick="MMF.adjust(-60)">−1M</button>
+      <button onclick="MMF.adjust(-30)">−30s</button>
+      <button onclick="MMF.adjust(30)">+30s</button>
+      <button onclick="MMF.adjust(60)">+1M</button>
+    </div>
+  </div>
+
+  <div class="remoteBar" id="remoteBar">
+    <button id="localMode" onclick="Remote.mode('local')" class="active">THIS DEVICE</button>
+    <button id="controllerMode" onclick="Remote.mode('controller')">CONTROLLER</button>
+    <button id="displayMode" onclick="Remote.mode('display')">DISPLAY</button>
+    <span id="controllerTools" hidden>Room: <strong id="roomCode">—</strong> <button onclick="Remote.newRoom()">NEW ROOM</button></span>
+    <span id="displayTools" hidden><input id="joinCode" maxlength="6" placeholder="CODE" aria-label="Room code" autocomplete="off"><button onclick="Remote.join()">CONNECT</button></span>
+    <span id="connectionStatus">Standalone timer</span>
+  </div>
+  <div class="display" id="display">
+    <div id="displayText">00:00</div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="mainBtn start" onclick="MMF.startPause()">START</button>
+    <button class="mainBtn reset" onclick="MMF.reset()">RESET</button>
+  </div>
+
+  <div class="presets">
+    <button class="preset" onclick="MMF.set(5)">5 M</button>
+    <button class="preset" onclick="MMF.set(10)">10 M</button>
+    <button class="preset" onclick="MMF.set(15)">15 M</button>
+    <button class="preset" onclick="MMF.set(20)">20 M</button>
+    <button class="preset" onclick="MMF.set(30)">30 M</button>
+    <button class="preset" onclick="MMF.set(40)">40 M</button>
+    <button class="preset" onclick="MMF.set(50)">50 M</button>
+    <button class="preset" onclick="MMF.set(60)">60 M</button>
+    <button class="preset" onclick="MMF.set(90)">90 M</button>
+    <button class="preset" onclick="MMF.clock()">TIME OF DAY</button>
+  </div>
+
+  <div class="panel">
+    <div class="panelTitle">Customize Timer</div>
+    <label>Time (minutes) <input id="customMinutes" type="number" min="0" step="1" placeholder="Minutes"></label>
+    <label>Background <input id="bgColor" type="color" value="#000000"></label>
+    <label>Text <input id="textColor" type="color" value="#ffffff"></label>
+    <button class="apply" onclick="MMF.applyCustom()">APPLY CUSTOM SETTINGS</button>
+    <div class="messageRow">
+      <label>Speaker Message <input id="speakerMessage" type="text" placeholder="WRAP UP / 2 MINUTES / Q&A"></label>
+      <button class="msgBtn" onclick="MMF.showMessage()">SHOW</button>
+      <button class="msgBtn" onclick="MMF.hideMessage()">HIDE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const display=$('displayText');
+let duration=0, remaining=0, endAt=0, running=false, clockMode=false;
+let message='', messageVisible=false, bg='#000000', fg='#ffffff';
+let mode='local', peer=null, connection=null, clients=[], heartbeat=null, reconnect=null;
+let remoteState=null, receivedAt=0, lastPaint='';
+const canvas=document.createElement('canvas'), ctx=canvas.getContext('2d');
+const format=s=>{s=Math.max(0,Math.ceil(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function currentRemaining(){return running?Math.max(0,Math.ceil((endAt-Date.now())/1000)):remaining;}
+function clockString(){const d=new Date();return String(d.getHours()%12||12).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function bounds(){return {w:Math.max(20,display.clientWidth-45),h:Math.max(20,display.clientHeight-40)}}
+function measure(s,z){ctx.font='900 '+z+'px Arial, Helvetica, sans-serif';return ctx.measureText(s).width}
+function linesAt(words,size,width,single){let lines=[],line='';for(const word of words){if(measure(word,size)>width)return null;const next=line?line+' '+word:word;if(measure(next,size)<=width)line=next;else if(single)return null;else{lines.push(line);line=word}}if(line)lines.push(line);return lines}
+function fit(value,isMessage){
+ const b=bounds();let words=value.trim().split(/\s+/).filter(Boolean);if(!words.length)words=[' '];
+ let forceSingle=!isMessage||words.length<=3;
+ function solve(single){let lo=4,hi=Math.max(b.w,b.h)*1.5,best=null;for(let i=0;i<29;i++){const mid=(lo+hi)/2,lines=linesAt(words,mid,b.w,single);if(lines&&lines.length*mid*1.06<=b.h){lo=mid;best=lines}else hi=mid}return best?{size:lo*.94,lines:best}:null}
+ let result=solve(forceSingle)||solve(false)||{size:12,lines:[value]};
+ display.replaceChildren();display.style.flexDirection='column';display.style.fontSize=result.size+'px';display.style.lineHeight='1.02';display.style.whiteSpace='nowrap';display.style.overflow='hidden';
+ for(const line of result.lines){const row=document.createElement('div');row.textContent=line;row.style.whiteSpace='nowrap';row.style.flex='0 0 auto';display.appendChild(row)}
+}
+function state(){return {duration,remaining:currentRemaining(),running,clockMode,message,messageVisible,bg,fg,clock:clockString()}}
+function applyColors(s){document.body.style.background=s.bg;$('display').style.background=s.bg;display.style.color=s.fg}
+function render(){
+ const s=mode==='display'&&remoteState?remoteState:state();applyColors(s);
+ let value;if(s.messageVisible)value=s.message;else if(s.clockMode)value=mode==='display'?clockString():clockString();else{
+ let seconds=s.remaining;
+ if(mode==='display'&&s.running)seconds=Math.max(0,Math.ceil(s.remaining-(Date.now()-receivedAt)/1000));
+ value=format(seconds);
+ }
+ const signature=value+'|'+s.messageVisible+'|'+display.clientWidth+'|'+display.clientHeight;
+ if(signature!==lastPaint){fit(value,!!s.messageVisible);lastPaint=signature}
+ $('startBtn').textContent=running?'PAUSE':'START';
+}
+function publish(){if(mode==='controller'){const s=state();clients=clients.filter(c=>c.open);for(const c of clients){try{c.send({type:'state',state:s})}catch(e){}}}render()}
+function set(min){running=false;clockMode=false;messageVisible=false;duration=Math.max(0,Math.round(min*60));remaining=duration;publish()}
+function adjust(sec){if(clockMode)return;remaining=Math.max(0,currentRemaining()+sec);if(running)endAt=Date.now()+remaining*1000;else duration=remaining;publish()}
+function startPause(){if(clockMode)return;if(running){remaining=currentRemaining();running=false}else if(currentRemaining()>0){running=true;endAt=Date.now()+remaining*1000}publish()}
+function reset(){running=false;clockMode=false;messageVisible=false;remaining=duration;publish()}
+function clock(){running=false;clockMode=true;messageVisible=false;publish()}
+function showMessage(){const value=$('speakerMessage').value.trim();if(!value)return;message=value;messageVisible=true;publish()}
+function hideMessage(){messageVisible=false;publish()}
+function applyCustom(){bg=$('bgColor').value;fg=$('textColor').value;const min=$('customMinutes').value;if(min!=='')set(Number(min));else publish()}
+window.MMF={set,adjust,startPause,reset,clock,showMessage,hideMessage,applyCustom};
+function status(s){$('connectionStatus').textContent=s}
+function closeNetwork(){if(heartbeat)clearInterval(heartbeat);heartbeat=null;if(reconnect)clearTimeout(reconnect);reconnect=null;for(const c of clients)try{c.close()}catch(e){}clients=[];if(connection)try{connection.close()}catch(e){}connection=null;if(peer)try{peer.destroy()}catch(e){}peer=null;remoteState=null}
+function room(){const a=new Uint8Array(6);if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(a);else for(let i=0;i<6;i++)a[i]=Math.random()*256;const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from(a,x=>alphabet[x%alphabet.length]).join('')}
+function checkLibrary(){if(typeof Peer==='undefined'){status('Connection library unavailable. Internet required.');return false}return true}
+function host(){if(!checkLibrary())return;const code=room();$('roomCode').textContent=code;status('Opening room…');peer=new Peer('mmftimer-'+code,{debug:0});peer.on('open',()=>{status('Room ready — enter code on display');publish()});peer.on('connection',c=>{clients.push(c);c.on('open',()=>{status('Display connected ('+clients.filter(x=>x.open).length+')');c.send({type:'state',state:state()})});c.on('close',()=>{clients=clients.filter(x=>x!==c);status(clients.length?'Display connected':'Room ready — waiting for display')});c.on('error',()=>status('Display connection error'))});peer.on('error',e=>{status(e.type==='unavailable-id'?'Room collision — tap NEW ROOM':'Connection error — tap NEW ROOM')});peer.on('disconnected',()=>{status('Signaling interrupted — reconnecting');try{peer.reconnect()}catch(e){}});heartbeat=setInterval(publish,1000)}
+function join(){if(mode!=='display')return;if(!checkLibrary())return;const code=$('joinCode').value.trim().toUpperCase();if(!/^[A-Z2-9]{6}$/.test(code)){status('Enter the six-character room code');return}if(connection)connection.close();if(peer)peer.destroy();status('Connecting to '+code+'…');peer=new Peer(undefined,{debug:0});peer.on('open',()=>{connection=peer.connect('mmftimer-'+code,{reliable:true});connection.on('open',()=>status('Connected to controller'));connection.on('data',payload=>{if(payload&&payload.type==='state'){remoteState=payload.state;receivedAt=Date.now();lastPaint='';render()}});connection.on('close',()=>status('Disconnected — tap CONNECT to rejoin'));connection.on('error',()=>status('Connection error — retry'))});peer.on('error',e=>status(e.type==='peer-unavailable'?'Room not found — check code':'Connection failed — retry'))}
+function modeChange(next){closeNetwork();mode=next;document.body.classList.toggle('displayMode',next==='display');$('controllerTools').hidden=next!=='controller';$('displayTools').hidden=next!=='display';for(const m of ['local','controller','display'])$(m+'Mode').classList.toggle('active',m===next);status(next==='local'?'Standalone timer':next==='display'?'Enter the controller room code':'Opening room…');lastPaint='';if(next==='controller')host();render()}
+window.Remote={mode:modeChange,newRoom(){if(mode==='controller')modeChange('controller')},join};
+window.addEventListener('resize',()=>{lastPaint='';render()});if(window.ResizeObserver)new ResizeObserver(()=>{lastPaint='';render()}).observe($('display'));
+setInterval(()=>{if(running&&currentRemaining()<=0){running=false;remaining=0;publish()}else render()},200);
+render();
+})();
+</script>
+</body>
+</html>
