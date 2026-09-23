@@ -1,6 +1,6 @@
 {
-  "name": "MMF TIMER REMOTE",
-  "short_name": "MMF TIMER REMOTE",
+  "name": "MMF TIMER",
+  "short_name": "MMF TIMER",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",
