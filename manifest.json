@@ -1,1 +1,30 @@
-{"name":"MMF Timer Remote","short_name":"MMF Remote","start_url":"./","display":"standalone","background_color":"#000000","theme_color":"#000000","icons":[{"src":"icon-120.png","sizes":"120x120","type":"image/png"},{"src":"icon-152.png","sizes":"152x152","type":"image/png"},{"src":"icon-167.png","sizes":"167x167","type":"image/png"},{"src":"icon-1024.png","sizes":"1024x1024","type":"image/png"}]}
+{
+  "name": "MMF TIMER REMOTE",
+  "short_name": "MMF TIMER REMOTE",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "icon-120.png",
+      "sizes": "120x120",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-167.png",
+      "sizes": "167x167",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
